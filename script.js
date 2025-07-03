@@ -178,7 +178,9 @@ function setLanguage(lang) {
     // Update watermark text and input value
     watermark.text = translations[lang].textPlaceholder || 'Your Brand';
     watermarkText.value = watermark.text;
-    redraw();
+    if (img.src) { // Only redraw if an image is loaded
+        redraw();
+    }
 }
 
 languageSelector.addEventListener('change', (e) => setLanguage(e.target.value));
@@ -208,11 +210,14 @@ fontColorInput.addEventListener('input', (e) => {
 });
 
 opacity.addEventListener('input', (e) => {
-    opacityInput.value = (e.target.value * 100).toFixed(0);
+    opacityInput.value = Math.round(e.target.value * 100);
     updateWatermark();
 });
 opacityInput.addEventListener('input', (e) => {
-    opacity.value = (e.target.value / 100).toFixed(1);
+    const value = parseFloat(e.target.value);
+    if (!isNaN(value)) {
+        opacity.value = Math.max(0, Math.min(100, value)) / 100;
+    }
     updateWatermark();
 });
 
@@ -257,9 +262,10 @@ function setDefaultWatermarkPosition() {
 
 function updateWatermark() {
     watermark.text = watermarkText.value;
-    watermark.size = parseInt(fontSizeInput.value);
+    watermark.size = parseInt(fontSizeInput.value) || 40;
     watermark.color = fontColorInput.value;
-    watermark.alpha = parseFloat(opacityInput.value) / 100;
+    const opacityValue = parseFloat(opacityInput.value);
+    watermark.alpha = isNaN(opacityValue) ? 0.5 : opacityValue / 100;
     watermark.pattern = document.querySelector('input[name="pattern"]:checked').value;
     redraw();
 }
